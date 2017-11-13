@@ -9,7 +9,7 @@ It was trained using a dataset containing 51,839 classified examples, each color
 - 4,410 examples on the validation set
 - 12,630 examples on the test set
 
-The project was implemented on a [Jupyter notebook](Traffic_Sign_Classifier.ipynb).
+The project was implemented on a [Jupyter notebook](Traffic_Sign_Classifier.ipynb). The execution output of this notebook can be seen on [this html](Traffic_Sign_Classifier.html) page.
 A visualization of a dataset sample can be found on the notebook.
 
 
