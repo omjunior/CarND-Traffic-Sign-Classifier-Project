@@ -1,58 +1,101 @@
-## Project: Build a Traffic Sign Recognition Program
-[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
+# Project: Build a Traffic Sign Recognition Program
 
-Overview
----
-In this project, you will use what you've learned about deep neural networks and convolutional neural networks to classify traffic signs. You will train and validate a model so it can classify traffic sign images using the [German Traffic Sign Dataset](http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset). After the model is trained, you will then try out your model on images of German traffic signs that you find on the web.
 
-We have included an Ipython notebook that contains further instructions 
-and starter code. Be sure to download the [Ipython notebook](https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project/blob/master/Traffic_Sign_Classifier.ipynb). 
+## Overview
 
-We also want you to create a detailed writeup of the project. Check out the [writeup template](https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project/blob/master/writeup_template.md) for this project and use it as a starting point for creating your own writeup. The writeup can be either a markdown file or a pdf document.
+The goal of this project is to design and train a model that can be used to classify German traffic signs.
+It was trained using a dataset containing 51,839 classified examples, each color image with 32x32 pixels, divided in the following way:
+- 34,799 examples on the training set
+- 4,410 examples on the validation set
+- 12,630 examples on the test set
 
-To meet specifications, the project will require submitting three files: 
-* the Ipython notebook with the code
-* the code exported as an html file
-* a writeup report either as a markdown or pdf file 
+The project was implemented on a [Jupyter notebook](Traffic_Sign_Classifier.ipynb).
+A visualization of a dataset sample can be found on the notebook.
 
-Creating a Great Writeup
----
-A great writeup should include the [rubric points](https://review.udacity.com/#!/rubrics/481/view) as well as your description of how you addressed each point.  You should include a detailed description of the code used in each step (with line-number references and code snippets where necessary), and links to other supporting documents or external references.  You should include images in your writeup to demonstrate how your code works with examples.  
 
-All that said, please be concise!  We're not looking for you to write a book here, just a brief description of how you passed each rubric point, and references to the relevant code :). 
+## Data flow
 
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup.
+### Preprocessing
 
-The Project
----
-The goals / steps of this project are the following:
-* Load the data set
-* Explore, summarize and visualize the data set
-* Design, train and test a model architecture
-* Use the model to make predictions on new images
-* Analyze the softmax probabilities of the new images
-* Summarize the results with a written report
+The images were equalized and normalized to ensure that data points are not concentrated over a small excursion.
 
-### Dependencies
-This lab requires:
+The equalization method used was transforming the image colorspace to LAB and applying the Contrast Limited Adaptive Histogram Equalization over the lightness channel and then converting it back to RGB colorspace.
 
-* [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit)
+Normalization was mean subtraction and standard deviation division.
 
-The lab environment can be created with CarND Term1 Starter Kit. Click [here](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) for the details.
+No further preprocessing was done, like features extraction or applying definite filters, because the model is supposed to derive what it needs on its own.
 
-### Dataset and Repository
+The training set was augmented by applying some transformations to copies of the images, in order to have more different examples for training the network.
+The transformations used were:
+- Rotation [-10 deg, +10 deg]
+- Scaling [0.9, 1.1]
+- Gaussian noise [mean 0, std 0.1]
 
-1. Download the data set. The classroom has a link to the data set in the "Project Instructions" content. This is a pickled dataset in which we've already resized the images to 32x32. It contains a training, validation and test set.
-2. Clone the project, which contains the Ipython notebook and the writeup template.
-```sh
-git clone https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project
-cd CarND-Traffic-Sign-Classifier-Project
-jupyter notebook Traffic_Sign_Classifier.ipynb
-```
+Preprocessing and transformations were implemented using the OpenCV library.
 
-### Requirements for Submission
-Follow the instructions in the `Traffic_Sign_Classifier.ipynb` notebook and write the project report using the writeup template as a guide, `writeup_template.md`. Submit the project code and writeup document.
+### Architecture
 
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+The network consists of three convolutional layers followed by three fully connected layers. All activation functions were leaky ReLUs. Max pooling was used in every convolutional layer with size and stride of two. Dropout was used on every layer but the last.
 
+Layer | Note | Input | Output | Parameters
+--- | --- | :---: | :---: | ---:
+Convolutional | 5x5 | 32x32x3 | 28x28x50 | 3,800
+Activation | Leaky ReLU |
+Max pooling | 2x2 | 28x28x50 | 14x14x50
+Dropout | keep 0.67 |
+Convolutional | 3x3 | 14x14x50 | 12x12x80 | 36,080
+Activation | Leaky ReLU |
+Max pooling | 2x2 | 12x12x80 | 6x6x80
+Dropout | keep 0.67 |
+Convolutional | 3x3 | 6x6x80 | 4x4x100 | 72,100
+Activation | Leaky ReLU |
+Max pooling | 2x2 | 4x4x100 | 2x2x100
+Dropout | keep 0.67 |  
+Flattening || 2x2x100 | 400
+Fully connected || 400 | 120 | 48,120
+Activation | Leaky ReLU |
+Dropout | keep 0.67 |
+Fully connected || 120 | 80 | 9,680
+Activation | Leaky ReLU |
+Dropout | keep 0.67 |
+Fully connected || 80 | 43 | 3,483
+Total | | 32x32x3 | 43 | 173,263
+
+
+The use of leaky ReLU makes it more likely that all units stay 'alive' during the training process. On a regular ReLU, once it's output is zero it's associated term on the derivative of the cost function disappears, making that unit's input weights not change anymore, making it a 'dead ReLU'.
+
+Max pooling was used to reduce the number of parameters on the network.
+
+Dropout and regularization were used as a form to prevent overfitting.
+
+### Training
+
+The data was split into mini batches of size 128, and run over 20 epochs with a learning rate of 0.0003.
+Other hyperparameters used include the alpha for Leaky ReLUs of 0.2, a beta for regularization of 0.01 and drop keep of 0.67.
+
+These values were tuned by training the network over the training set and evaluating accuracy on the validation set.
+I believe that these values could be further optimized, but the time consumed for each training session prevented me from reaching it.
+
+I could see that dropout was more effective in preventing overfitting while keeping a good result on the validation set than regularization was.
+
+### Solution
+
+One problem faced was the use of dropout prior to max pooling. The idea of dropping out an output of a layer is to make the next layer independent of a specific input. By using dropout behind max pooling, almost always the max pooling will have a non-zero neighbor value to be used, hence making an input for the next layer available.
+Once the order was switched results got better, going from ~92% to ~95% on the validation set.
+
+Overall, once I got results above 95% on the validation set, I run the network on the test set to get 94.17%.
+
+## Testing the model on new data
+
+In order to confirm the model with unseen data, I took some screenshots from Google Maps street view and resized them to 32x32x3.
+
+I have preprocessed the images the same way I did with all the previous data, and the model was able to correctly identify all 5 samples.
+
+The results were pretty firmly certain.
+The only example below 90% was a 'no entry' sign, with 88.91% of certainty for the correct label, and 7.37% for a 'stop' sign, which is also red with white markings in the middle.
+
+## Conclusion
+
+Overall the model performed well, but I am certain that with more fine-tuning of the hyperparameters better results could come from the same architecture.
+Other than that I have not tried inception modules, which could potentially make the results even better.
+But it shows that even a relatively simple model can have a good prediction rate.
