@@ -4,10 +4,11 @@
 ## Overview
 
 The goal of this project is to design and train a model that can be used to classify German traffic signs.
-It was trained using a dataset containing 51,839 classified examples, each color image with 32x32 pixels, divided in the following way:
+It was trained using a dataset containing 51,839 classified image examples divided in the following way:
 - 34,799 examples on the training set
 - 4,410 examples on the validation set
 - 12,630 examples on the test set
+Each image has 32 by 32 pixels and each pixel is represented by 3 8-bit integer for 3 channels (R, G and B). So in total, each image can be represented by a 32x32x3 matrix of 8-bit values.
 
 The project was implemented on a [Jupyter notebook](Traffic_Sign_Classifier.ipynb). The execution output of this notebook can be seen on [this html](Traffic_Sign_Classifier.html) page.
 A visualization of a dataset sample can be found on the notebook.
@@ -70,7 +71,9 @@ Dropout and regularization were used as a form to prevent overfitting.
 
 ### Training
 
-The data was split into mini batches of size 128, and run over 20 epochs with a learning rate of 0.0003.
+The data was split into mini batches of size 128, and run over 20 epochs with a learning rate of 0.0003. The optimizer used was AdamOptimizer.
+These hyperparameters were empirically chosen. Especially, a lower enough learning rate was chosen so the accuracy could achieve better values, and the number of epochs was defined by observing a very low gain at the final epochs. I did not try many other batch sizes or any other optimizer.
+
 Other hyperparameters used include the alpha for Leaky ReLUs of 0.2, a beta for regularization of 0.01 and drop keep of 0.67.
 
 These values were tuned by training the network over the training set and evaluating accuracy on the validation set.
