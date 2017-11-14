@@ -8,6 +8,7 @@ It was trained using a dataset containing 51,839 classified image examples divid
 - 34,799 examples on the training set
 - 4,410 examples on the validation set
 - 12,630 examples on the test set
+
 Each image has 32 by 32 pixels and each pixel is represented by 3 8-bit integer for 3 channels (R, G and B). So in total, each image can be represented by a 32x32x3 matrix of 8-bit values.
 
 The project was implemented on a [Jupyter notebook](Traffic_Sign_Classifier.ipynb). The execution output of this notebook can be seen on [this html](Traffic_Sign_Classifier.html) page.
